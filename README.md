@@ -3,6 +3,38 @@ Kudu Sink
 
 CDAP Plugin for ingesting data into Apache Kudu. This plugin can be configured to be used in Batch and Real-time pipelines. 
 
+Configurations
+---------------
+
+Required Fields
+================
+
+* Table Name
+* Kudu Master Hosts
+* Schema
+
+Optional Fields
+================
+* Operation Timeout (milliseconds)
+* Administration Operation Timeout (milliseconds)
+* Columns to Hash
+* Hashing Seed
+* Column Compression Algorithm
+  * Default Compression (Snappy)
+  * No Compression
+  * Snappy Compression
+  * LZ4 Compression
+  * ZLib Compression
+* Encoding
+  * Auto Encoding
+  * Plain Encoding
+  * Prefix Encoding
+  * Group Varint Encoding
+  * Run Length Encoding (RLE)
+  * Dictionary Encoding
+  * Bit Shuffle Encoding
+
+
 Build
 -----
 To build your plugins:
