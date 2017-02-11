@@ -1,37 +1,37 @@
-## Kudu Sink
+Kudu Sink
+---------
 
-You can use the [editor on GitHub](https://github.com/hydrator/kudu-sink/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
+Build
+-----
+To build your plugins:
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+    mvn clean package -DskipTests
 
-### Markdown
+The build will create a .jar and .json file under the ``target`` directory.
+These files can be used to deploy your plugins.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+UI Integration
+--------------
+The Cask Hydrator UI displays each plugin property as a simple textbox. To customize how the plugin properties
+are displayed in the UI, you can place a configuration file in the ``widgets`` directory.
+The file must be named following a convention of ``[plugin-name]-[plugin-type].json``.
 
-```markdown
-Syntax highlighted code block
+See [Plugin Widget Configuration](http://docs.cdap.io/cdap/current/en/hydrator-manual/developing-plugins/packaging-plugins.html#plugin-widget-json)
+for details on the configuration file.
 
-# Header 1
-## Header 2
-### Header 3
+The UI will also display a reference doc for your plugin if you place a file in the ``docs`` directory
+that follows the convention of ``[plugin-name]-[plugin-type].md``.
 
-- Bulleted
-- List
+When the build runs, it will scan the ``widgets`` and ``docs`` directories in order to build an appropriately
+formatted .json file under the ``target`` directory. This file is deployed along with your .jar file to add your
+plugins to CDAP.
 
-1. Numbered
-2. List
+Deployment
+----------
+You can deploy your plugins using the CDAP CLI:
 
-**Bold** and _Italic_ and `Code` text
+    > load artifact <target/plugin.jar> config-file <target/plugin.json>
 
-[Link](url) and ![Image](src)
-```
+For example, if your artifact is named 'my-plugins-1.0.0':
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/hydrator/kudu-sink/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://help.github.com/categories/github-pages-basics/) or [contact support](https://github.com/contact) and we’ll help you sort it out.
+    > load artifact target/my-plugins-1.0.0.jar config-file target/my-plugins-1.0.0.json
