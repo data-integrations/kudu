@@ -7,7 +7,7 @@ Configurations
 ---------------
 
 **Required Fields**
-****************
+###################
 
 * *Table Name* 
 
@@ -22,7 +22,8 @@ Configurations
  Specifies the write schema to be used to write to Kudu. 
 
 **Optional Fields**
-****************
+###################
+
 * *Operation Timeout*
 
  This configuration sets the timeout in milliseconds for user operations with Kudu. If you are writing large sized records it's recommended to increase the this time. It's defaulted to 30 seconds. 
