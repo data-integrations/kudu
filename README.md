@@ -52,7 +52,8 @@ Configurations
   * Snappy Compression
   * LZ4 Compression
   * ZLib Compression
-* Encoding
+  
+* *Encoding*
 
  Specifies the block encoding for the column. Following are different options available. 
  
