@@ -6,14 +6,14 @@ CDAP Plugin for ingesting data into Apache Kudu. This plugin can be configured t
 Configurations
 ---------------
 
-Required Fields
+**Required Fields**
 ****************
 
 * Table Name
 * Kudu Master Hosts
 * Schema
 
-Optional Fields
+**Optional Fields**
 ****************
 * Operation Timeout (milliseconds)
 * Administration Operation Timeout (milliseconds)
