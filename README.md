@@ -9,9 +9,17 @@ Configurations
 **Required Fields**
 ****************
 
-* Table Name
-* Kudu Master Hosts
-* Schema
+* *Table Name* 
+
+ This configuration specifies the Kudu table name to which the records will be written. This plugin checks if the table already exists. If it exists, it compares the schema of the existing table with the write schema specified for the plugin, If they don't match an error is thrown at configuration time and If the table doesn't exist, the table is created. 
+
+* *Kudu Master Hosts*
+
+ Specifies the list of Kudu master hosts that this plugin will attempt connect to. It's a comma separated list of &lt;hostname&gt;:&lt;port&gt;. Connection is attempt after the plugin is initialized in the pipeline. 
+ 
+* *Schema*
+ 
+ Specifies the write schema to be used to write to Kudu. 
 
 **Optional Fields**
 ****************
