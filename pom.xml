@@ -31,11 +31,11 @@
     <cdap.version>4.0.1</cdap.version>
     <hydrator.version>1.5.1</hydrator.version>
     <hadoop.version>2.3.0</hadoop.version>
+    <etl.versionRange>[4.0.0,10.0.0-SNAPSHOT)</etl.versionRange>
     <kudu.version>1.1.0</kudu.version>
     <!-- properties for script build step that creates the config files for the artifacts -->
     <widgets.dir>widgets</widgets.dir>
     <docs.dir>docs</docs.dir>
-    <app.parents>system:cdap-data-pipeline[3.5.0-SNAPSHOT,4.2.0-SNAPSHOT)</app.parents>
     <!-- this is here because project.basedir evaluates to null in the script build step -->
     <main.basedir>${project.basedir}</main.basedir>
   </properties>
@@ -445,15 +445,15 @@
                     cfgFile.createNewFile();
                   }
 
-                  var parents = project.getProperty("app.parents").split(",");
+                  var etlRange = project.getProperty("etl.versionRange");
                   var config = {
-                    "parents": [ ],
+                    "parents": [
+                      "system:cdap-data-pipeline" + etlRange,
+                      "system:cdap-data-streams" + etlRange,
+                      "system:cdap-etl-batch" + etlRange,
+                      "system:cdap-etl-realtime" + etlRange
+                    ],
                     "properties": {}
-                  }
-                  for (i = 0; i < parents.length; i+=2) {
-                    // because name1[lo,hi],name2[lo,hi] gets split into "name1[lo", "hi]", "name2[lo", "hi]"
-                    // so we have to combine them again
-                    config.parents.push(parents[i] + "," + parents[i+1]);
                   }
 
                   // look in widgets directory for widget config for each plugin

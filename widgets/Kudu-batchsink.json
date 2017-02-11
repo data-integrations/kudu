@@ -4,25 +4,69 @@
   },
   "configuration-groups": [
     {
-      "label": "Apache Kudu Configuration",
+      "label": "Kudu Configuration",
       "properties": [
         {
           "widget-type": "textbox",
           "label": "Table Name",
-          "name": "tableName",
+          "name": "name",
           "description": "Name of the Kudu table"
         },
         {
           "widget-type": "textbox",
           "label": "Master Addresses",
-          "name": "masterAddresses",
+          "name": "master-address",
           "description": "Comma separated list of hostname:port of Apache Kudu Masters"
+        }
+      ]
+    },
+    {
+      "label": "Kudu Advanced Options",
+      "properties" : [
+        {
+          "widget-type": "textbox",
+          "label": "Uer operations timeout in ms",
+          "name": "opt-timeout"
         },
         {
           "widget-type": "textbox",
-          "label": "Operation Timeout in ms",
-          "name": "operationTimeoutMs",
-          "description": "Apache Kudu operation timeout in ms"
+          "label": "Administration operation timeout(ms)",
+          "name": "admin-timeout"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Column Hash Seed",
+          "name": "seed"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Name of columns to be used as key",
+          "name": "columns"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Number of copies",
+          "name": "replicas"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Compression Algorithm",
+          "name": "compression-algo"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Encoding Type",
+          "name": "encoding"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "No of rows to buffer",
+          "name": "row-flush"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "No of buckets",
+          "name": "buckets"
         }
       ]
     }
@@ -45,7 +89,6 @@
           "double",
           "bytes",
           "string",
-          "map<string, string>"
         ],
         "schema-default-type": "string"
       }

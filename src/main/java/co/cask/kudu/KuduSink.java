@@ -33,7 +33,9 @@ import co.cask.hydrator.common.ReferenceBatchSink;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.yarn.webapp.NotFoundException;
+import org.apache.kudu.ColumnSchema;
+import org.apache.kudu.Type;
+import org.apache.kudu.client.CreateTableOptions;
 import org.apache.kudu.client.Insert;
 import org.apache.kudu.client.KuduClient;
 import org.apache.kudu.client.KuduException;
@@ -46,9 +48,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * {@link BatchSink} to write to Apache Kudu
@@ -59,41 +63,129 @@ import java.util.Map;
 public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable, Operation> {
   private static final Logger LOG = LoggerFactory.getLogger(KuduSink.class);
 
-  private final KuduConfig config;
+  private final Config config;
 
   private KuduClient kuduClient;
   private KuduTable kuduTable;
   private Schema outputSchema;
 
-  public KuduSink(KuduConfig config) {
+  public KuduSink(Config config) {
     super(config);
     this.config = config;
   }
 
-  @Override
-  public void configurePipeline(PipelineConfigurer pipelineConfigurer) {
-    super.configurePipeline(pipelineConfigurer);
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(config.schema), "Schema must be given as a property.");
+  /**
+   * Convert from {@link co.cask.cdap.api.data.schema.Schema.Type} to {@link Type}.
+   *
+   * @param type {@link StructuredRecord} field type.
+   * @return {@link Type} Kudu type.
+   * @throws TypeConversionException thrown when can't be converted.
+   */
+  private Type toKuduType(Schema.Type type) throws TypeConversionException {
+    if (type == Schema.Type.STRING) {
+      return Type.STRING;
+    } else if (type == Schema.Type.INT) {
+      return Type.INT32;
+    } else if (type == Schema.Type.LONG) {
+      return Type.INT64;
+    } else if (type == Schema.Type.BYTES) {
+      return Type.BINARY;
+    } else if (type == Schema.Type.DOUBLE) {
+      return Type.DOUBLE;
+    } else if (type == Schema.Type.FLOAT) {
+      return Type.FLOAT;
+    } else if (type == Schema.Type.BOOLEAN) {
+      return Type.BOOL;
+    } else {
+      throw new TypeConversionException("Field type specified is incompatible with Kudu field type.");
+    }
+  }
 
+  /**
+   * Converts from CDAP field types to Kudu types.
+   *
+   * @param schema CDAP Schema
+   * @param columns List of columns that are considered as keys
+   * @param algorithm Compression algorithm to be used for the column.
+   * @param encoding Encoding type
+   * @return List of {@link ColumnSchema}
+   * @throws TypeConversionException thrown when CDAP schema cannot be converted to Kudu Schema.
+   */
+  private List<ColumnSchema> toKuduSchema(Schema schema, Set<String> columns,
+                                                        ColumnSchema.CompressionAlgorithm algorithm,
+                                                        ColumnSchema.Encoding encoding)
+    throws TypeConversionException {
+    List<ColumnSchema> columnSchemas = new ArrayList<>();
+    for (Schema.Field field : schema.getFields()) {
+      String name = field.getName();
+      Type kuduType = toKuduType(field.getSchema().getType());
+      ColumnSchema.ColumnSchemaBuilder builder = new ColumnSchema.ColumnSchemaBuilder(name, kuduType);
+      if (field.getSchema().isNullable()) {
+        builder.nullable(true);
+      }
+      builder.encoding(encoding);
+      builder.compressionAlgorithm(algorithm);
+      if (columns.contains(name)) {
+        builder.key(true);
+      }
+      columnSchemas.add(builder.build());
+    }
+    return columnSchemas;
+  }
+
+  @Override
+  public void configurePipeline(PipelineConfigurer configurer) {
+    super.configurePipeline(configurer);
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(config.optSchema), "Schema must be given as a property.");
+
+    // Checks if the schema is a valid schema.
     Schema outputSchema;
     try {
-      outputSchema = Schema.parseJson(config.schema);
+      outputSchema = Schema.parseJson(config.optSchema);
     } catch (IOException e) {
       throw new IllegalArgumentException("Unable to parse output schema.");
     }
 
     // Check if the table exists in Kudu.
-    pipelineConfigurer.getStageConfigurer().setOutputSchema(outputSchema);
+    configurer.getStageConfigurer().setOutputSchema(outputSchema);
+
+    // Create a Kudu connection. A connection is attempted during the
+    // deployment of the pipeline that contains this plugin.
+    // NOTE: I am not sure if this is the right place for this to happen, but
+    // not sure if it's the right place during initialization to create the
+    // table if it doesn't exit.
+    kuduClient = new KuduClient.KuduClientBuilder(config.optMasterAddresses)
+      .defaultAdminOperationTimeoutMs(config.optAdminTimeoutMs)
+      .disableStatistics()
+      .build();
+
+    // Check if the table exists, if table does not exist, then create one
+    // with schema defined in the write schema.
     try {
-      if (! kuduClient.tableExists(this.config.tableName)) {
-        throw new NotFoundException(
-          String.format("Kudu table '%s' does not exist.", config.tableName)
-        );
+      if (!kuduClient.tableExists(this.config.optTableName)) {
+        List<ColumnSchema> columnSchemas = toKuduSchema(outputSchema, config.getColumns(),
+                                                        config.getCompression(), config.getEncoding());
+        org.apache.kudu.Schema kuduSchema = new org.apache.kudu.Schema(columnSchemas);
+        CreateTableOptions tableOptions = new CreateTableOptions();
+        tableOptions.addHashPartitions(new ArrayList<>(config.getColumns()), config.getBuckets());
+
+        try {
+          KuduTable table =
+            kuduClient.createTable(config.optTableName, kuduSchema, tableOptions);
+          LOG.info("Successfully create table '{}', Table ID '{}'", config.optTableName, table.getTableId());
+        } catch (KuduException e) {
+          throw new RuntimeException(
+            String.format("Unable to create table '{}'. Reason : {}", config.optTableName, e.getMessage())
+          );
+        }
       }
     } catch (KuduException e) {
       LOG.warn(String.format("Unable to check if the table '%s' exists in kudu. Reason : %s",
-                             config.tableName, e.getMessage()));
+                             config.optTableName, e.getMessage()));
+    } catch (TypeConversionException e) {
+      throw new RuntimeException(e.getCause());
     }
+
   }
 
   @Override
@@ -104,11 +196,14 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   @Override
   public void initialize(BatchRuntimeContext context) throws Exception {
     super.initialize(context);
-    outputSchema = Schema.parseJson(config.schema);
-    kuduClient = new KuduClient.KuduClientBuilder(config.masterAddresses)
-      .defaultOperationTimeoutMs(config.operationTimeoutMs)
+
+    // Parsing the schema should never fail here, because configure has validated it.
+    outputSchema = Schema.parseJson(config.optSchema);
+    kuduClient = new KuduClient.KuduClientBuilder(config.optMasterAddresses)
+      .defaultOperationTimeoutMs(config.optOperationTimeoutMs)
+      .defaultAdminOperationTimeoutMs(config.optAdminTimeoutMs)
       .build();
-    kuduTable = kuduClient.openTable(config.tableName);
+    kuduTable = kuduClient.openTable(config.optTableName);
   }
 
   @Override
@@ -176,11 +271,12 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
 
     private final Map<String, String> conf;
 
-    KuduOutputFormatProvider(KuduConfig config) throws IOException {
+    KuduOutputFormatProvider(Config config) throws IOException {
       this.conf = new HashMap<>();
-      this.conf.put("kudu.mapreduce.master.addresses", config.masterAddresses);
-      this.conf.put("kudu.mapreduce.output.table", config.tableName);
-      this.conf.put("kudu.mapreduce.operation.timeout.ms", String.valueOf(config.operationTimeoutMs));
+      this.conf.put("kudu.mapreduce.master.addresses", config.optMasterAddresses);
+      this.conf.put("kudu.mapreduce.output.table", config.optTableName);
+      this.conf.put("kudu.mapreduce.operation.timeout.ms", String.valueOf(config.optOperationTimeoutMs));
+      this.conf.put("kudu.mapreduce.buffer.row.count", String.valueOf(config.optFlushRows));
     }
 
     @Override
@@ -193,4 +289,5 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
       return conf;
     }
   }
+
 }
