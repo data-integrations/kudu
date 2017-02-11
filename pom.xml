@@ -123,6 +123,7 @@
       <version>${cdap.version}</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.apache.kudu</groupId>
       <artifactId>kudu-client</artifactId>
@@ -437,7 +438,6 @@
               <configuration>
                 <target>
                   <script language="javascript"> <![CDATA[
-
                   // for some reason, project.basedir evaluates to null if we just get the property here.
                   // so we set main.basedir to project.basedir in the pom properties, then main.basedir is used here
                   // where it evaluates correctly for whatever reason

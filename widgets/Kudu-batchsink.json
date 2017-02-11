@@ -88,7 +88,7 @@
           "float",
           "double",
           "bytes",
-          "string",
+          "string"
         ],
         "schema-default-type": "string"
       }
