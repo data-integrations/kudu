@@ -23,17 +23,37 @@ Configurations
 
 **Optional Fields**
 ****************
-* Operation Timeout (milliseconds)
-* Administration Operation Timeout (milliseconds)
-* Columns to Hash
-* Hashing Seed
-* Column Compression Algorithm
+* *Operation Timeout*
+
+ This configuration sets the timeout in milliseconds for user operations with Kudu. If you are writing large sized records it's recommended to increase the this time. It's defaulted to 30 seconds. 
+ 
+* *Administration Operation Timeout*
+
+ This configuration is used to set timeout in milliseconds for administrative operations like for creating table if table doesn't exist. This time is mainly used during initialize phase of the plugin when the table is created if it doesn't exist. 
+ 
+* *Columns to Hash*
+
+ Add a set of hash partitions to the above table. Each column specified here is part of tables primary key and a column will only appear in a single hash. 
+ 
+* *Hashing Seed*
+
+ The seed value specified is used to randomize mapping of rows to hash buckets. Setting the seed will ensure the hashed columns contain user provided values.
+ 
+* * Number of replicas*
+ Specifies the number of replicas for the above table. This will specify the number of replicas that each tablet will have. By default it will use the default set on the server side and that is generally 3. 
+ 
+* *Column Compression Algorithm*
+
+ Specifies the compression algorithm to be used for the columns. Following are different options available. 
   * Default Compression (Snappy)
   * No Compression
   * Snappy Compression
   * LZ4 Compression
   * ZLib Compression
 * Encoding
+
+ Specifies the block encoding for the column. Following are different options available. 
+ 
   * Auto Encoding
   * Plain Encoding
   * Prefix Encoding
