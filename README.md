@@ -39,7 +39,8 @@ Configurations
 
  The seed value specified is used to randomize mapping of rows to hash buckets. Setting the seed will ensure the hashed columns contain user provided values.
  
-* * Number of replicas*
+* *Number of replicas*
+
  Specifies the number of replicas for the above table. This will specify the number of replicas that each tablet will have. By default it will use the default set on the server side and that is generally 3. 
  
 * *Column Compression Algorithm*
