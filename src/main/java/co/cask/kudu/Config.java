@@ -22,6 +22,7 @@ import co.cask.cdap.api.annotation.Name;
 import co.cask.hydrator.common.ReferencePluginConfig;
 import org.apache.kudu.ColumnSchema;
 
+import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
 
@@ -72,7 +73,6 @@ public class Config extends ReferencePluginConfig {
   @Nullable
   @Macro
   public String optColumns;
-  private Set<String> columns;
 
   @Name("replicas")
   @Description("Specifies the number of replicas for the above table")
@@ -85,14 +85,12 @@ public class Config extends ReferencePluginConfig {
   @Nullable
   @Macro
   public String optCompressionAlgorithm;
-  private ColumnSchema.CompressionAlgorithm compression;
 
   @Name("encoding")
   @Description("Specifies the encoding to be applied on the schema. Default is 'auto'")
   @Nullable
   @Macro
   public String optEncoding;
-  private ColumnSchema.Encoding encoding;
 
   @Name("row-flush")
   @Description("Number of rows that are buffered before flushing to the tablet server")
@@ -105,8 +103,6 @@ public class Config extends ReferencePluginConfig {
   @Macro
   public int optBucketsCounts;
 
-  private int buckets;
-
   public Config(ColumnSchema.CompressionAlgorithm compression) {
     this("kudu");
   }
@@ -114,23 +110,21 @@ public class Config extends ReferencePluginConfig {
   public Config(String referenceName) {
     super(referenceName);
     this.optOperationTimeoutMs = 30000;
-    this.compression = ColumnSchema.CompressionAlgorithm.DEFAULT_COMPRESSION;
-    this.encoding = ColumnSchema.Encoding.AUTO_ENCODING;
   }
 
   public ColumnSchema.CompressionAlgorithm getCompression() {
-    return compression;
+    return ColumnSchema.CompressionAlgorithm.DEFAULT_COMPRESSION;
   }
 
   public ColumnSchema.Encoding getEncoding() {
-    return encoding;
+    return ColumnSchema.Encoding.AUTO_ENCODING;
   }
 
   public Set<String> getColumns() {
-    return columns;
+    return new HashSet<>();
   }
 
   public int getBuckets() {
-    return buckets;
+    return 16;
   }
 }
