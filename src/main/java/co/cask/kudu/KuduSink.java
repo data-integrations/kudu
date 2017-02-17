@@ -81,7 +81,9 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     } catch (IOException e) {
       throw new IllegalArgumentException("Unable to parse output schema.");
     }
-
+    kuduClient = new KuduClient.KuduClientBuilder(config.masterAddresses)
+      .defaultOperationTimeoutMs(config.operationTimeoutMs)
+      .build();
     // Check if the table exists in Kudu.
     pipelineConfigurer.getStageConfigurer().setOutputSchema(outputSchema);
     try {
@@ -119,9 +121,8 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     for (Schema.Field field : fields) {
       Object val = input.get(field.getName());
       Schema schema = field.getSchema();
-      if (!schema.isSimpleOrNullableSimple()) {
-        // don't know what to do with it.
-        continue;
+      if (schema.isNullable()) {
+        schema = schema.getNonNullable();
       }
       switch (schema.getType()) {
         case BOOLEAN:
@@ -161,7 +162,9 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   @Override
   public void onRunFinish(boolean succeeded, BatchSinkContext context) {
     try {
-      kuduClient.close();
+      if (kuduClient != null) {
+        kuduClient.close();
+      }
     } catch (KuduException e) {
       LOG.warn("Error closing Kudu Client.", e);
     }
