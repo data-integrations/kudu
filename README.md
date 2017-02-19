@@ -19,12 +19,12 @@ Kudu plugin uses ```UPSERT``` capability to write to Kudu.
 
 
 Table Creation
-****************
+--------------
 
 When the plugin is used witin a pipeline and it's configured to use macros either for ```table name``` or ```master address``` or both, the table creation is delayed till the pipeline is started. But, if they are no macros they are created at the deployment time. In both cases, the schema validation is done. 
 
 Type Conversions
-****************
+--------------
 
 The data types from the CDAP data pipeline are converted to Kudu types. Following is the conversion table. 
 
@@ -40,7 +40,7 @@ The data types from the CDAP data pipeline are converted to Kudu types. Followin
 | union | first non-nullable type |
 
 Quering from Impala
-*******************
+--------------
 Using this plugin creates a table within Kudu. If you are interested in querying through Impala, then you would have run the following query to create a reference to Kudu table as an external table within Impala. This can be achieved through ```impala-shell``` or HUE interface. 
 
 ```
