@@ -386,3 +386,4 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   }
 
 }
+
