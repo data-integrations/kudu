@@ -15,21 +15,7 @@ Usage Notes
 -----------
 This plugin creates Kudu table on deployment if the table does not exist. When the table already exists in Kudu, the write schema of the plugin is compared with the kudu table schema. If the field name and it's type are not an exact match, the deployment of the pipeline will fail. It will also compare number of fields in write schema are same as fields in Kudu table schema.
 
-Quering from Impala
-*******************
-In order to query through Impala an external Impala table has to be created as follows : 
-
-```
-CREATE EXTERNAL TABLE `<table-name>` STORED AS KUDU
-TBLPROPERTIES(
-  'kudu.table_name' = '<table-name>',
-  'kudu.master_addresses' = '<kudu-master-1>:7051,<kudu-master-2>:7051'
-);
-```
-
-```kudu.master_addresses``` configuration needs not be specified it impala is started with ```-kudu_impala``` configuration. for more information on how this can be configured check [here](http://kudu.apache.org/docs/kudu_impala_integration.html)
-
->  Available starting with Impala 2.7.0 that ships with CDH 5.10
+Kudu plugin uses ```UPSERT``` capability to write to Kudu. 
 
 Type Conversions
 ****************
@@ -46,6 +32,22 @@ The data types from the CDAP data pipeline are converted to Kudu types. Followin
 | float | float |
 | boolean | bool |
 | union | first non-nullable type |
+
+Quering from Impala
+*******************
+In order to query through Impala an external Impala table has to be created as follows : 
+
+```
+CREATE EXTERNAL TABLE `<table-name>` STORED AS KUDU
+TBLPROPERTIES(
+  'kudu.table_name' = '<table-name>',
+  'kudu.master_addresses' = '<kudu-master-1>:7051,<kudu-master-2>:7051'
+);
+```
+
+```kudu.master_addresses``` configuration needs not be specified it impala is started with ```-kudu_impala``` configuration. for more information on how this can be configured check [here](http://kudu.apache.org/docs/kudu_impala_integration.html)
+
+>  Available starting with Impala 2.7.0 that ships with CDH 5.10
 
 Plugin Configuration
 ---------------------
