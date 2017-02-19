@@ -3,8 +3,6 @@ Apache Kudu Sink
 
 CDAP Plugin for ingesting data into Apache Kudu. Plugin can be configured for both batch and real-time pipelines.
 
-[Video -- Showing how data can be ingested into Kudu](https://www.youtube.com/watch?v=KBW7a38vlUM)
-
 Usage Notes
 -----------
 This plugin creates Kudu table on deployment if the table does not exist. When the table already exists in Kudu, the write schema of the plugin is compared with the kudu table schema. If the field name and it's type are not an exact match, the deployment of the pipeline will fail. It will also compare number of fields in write schema are same as fields in Kudu table schema.
