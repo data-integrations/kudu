@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/hydrator/kudu-sink.svg?branch=master)](https://travis-ci.org/hydrator/kudu-sink)
+[![Build Status](https://travis-ci.org/hydrator/kudu-sink.svg?branch=master)](https://travis-ci.org/hydrator/kudu-sink) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Kudu Sink
 ==========
