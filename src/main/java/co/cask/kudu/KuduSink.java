@@ -104,7 +104,9 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     } catch (IOException e) {
       throw new IllegalArgumentException("Unable to parse output schema.");
     }
-
+    kuduClient = new KuduClient.KuduClientBuilder(config.masterAddresses)
+      .defaultOperationTimeoutMs(config.operationTimeoutMs)
+      .build();
     // Check if the table exists in Kudu.
     configurer.getStageConfigurer().setOutputSchema(writeSchema);
 
