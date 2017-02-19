@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ~ Copyright © 2016 Cask Data, Inc.
+  ~ Copyright © 2017 Cask Data, Inc.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License"); you may not
   ~ use this file except in compliance with the License. You may obtain a copy of
@@ -20,10 +20,11 @@
 
   <groupId>co.cask</groupId>
   <artifactId>kudu-sink</artifactId>
-  <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>Kudu Sink Plugin</name>
+  <name>Kudu Sink</name>
+  <description>Kudu Sink for Batch and Realtime Pipelines</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,14 +32,52 @@
     <cdap.version>4.0.1</cdap.version>
     <hydrator.version>1.5.1</hydrator.version>
     <hadoop.version>2.3.0</hadoop.version>
-    <kudu.version>1.2.0</kudu.version>
-    <!-- properties for script build step that creates the config files for the artifacts -->
+    <kudu.version>1.1.0</kudu.version>
     <widgets.dir>widgets</widgets.dir>
     <docs.dir>docs</docs.dir>
-    <app.parents>system:cdap-data-pipeline[3.5.0-SNAPSHOT,4.2.0-SNAPSHOT)</app.parents>
-    <!-- this is here because project.basedir evaluates to null in the script build step -->
+    <etl.versionRange>[4.0.0,10.0.0-SNAPSHOT)</etl.versionRange>
     <main.basedir>${project.basedir}</main.basedir>
   </properties>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Cask Data, Inc.</name>
+      <email>cdap-users@googlegroups.com</email>
+      <organization>Cask Data, Inc.</organization>
+      <organizationUrl>http://cask.co</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:https://github.com/hydrator/kudu-sink.git</connection>
+    <developerConnection>scm:git:git@github.com:hydrator/kudu-sink.git</developerConnection>
+    <url>https://github.com/hydrator/kudu-sink.git</url>
+    <tag>HEAD</tag>
+  </scm>
+
+  <distributionManagement>
+    <repository>
+      <id>sonatype.release</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+    </repository>
+    <snapshotRepository>
+      <id>sonatype.snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <issueManagement>
+    <url>https://issues.example.org/browse/CDAP</url>
+  </issueManagement>
 
   <repositories>
     <repository>
@@ -48,14 +87,6 @@
     <repository>
       <id>sonatype-snapshots</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
-    <repository>
-      <id>cdh.repo</id>
-      <name>Cloudera Repository</name>
-      <url>https://repository.cloudera.com/artifactory/cloudera-repos</url>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
     </repository>
   </repositories>
 
@@ -92,6 +123,7 @@
       <version>${cdap.version}</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.apache.kudu</groupId>
       <artifactId>kudu-client</artifactId>
@@ -357,81 +389,55 @@
   </dependencies>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.14.1</version>
-        <configuration>
-          <argLine>-Xmx5000m -Djava.awt.headless=true -XX:MaxPermSize=1024m -XX:+UseConcMarkSweepGC -XX:OnOutOfMemoryError="kill -9 %p" -Djava.net.preferIPv4Stack=true</argLine>
-          <reuseForks>false</reuseForks>
-          <reportFormat>plain</reportFormat>
-          <systemPropertyVariables>
-            <java.io.tmpdir>${project.build.directory}</java.io.tmpdir>
-          </systemPropertyVariables>
-          <includes>
-            <include>**/*TestsSuite.java</include>
-            <include>**/*TestSuite.java</include>
-            <include>**/Test*.java</include>
-            <include>**/*Test.java</include>
-            <include>**/*TestCase.java</include>
-          </includes>
-          <excludes>
-            <exclude>**/*TestRun.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.5.4</version>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Embed-Dependency>*;inline=false;scope=compile</Embed-Dependency>
-            <Embed-Transitive>true</Embed-Transitive>
-            <Embed-Directory>lib</Embed-Directory>
-            <!--Only @Plugin classes in the export packages will be included as plugin-->
-            <_exportcontents>
-              co.cask.kudu;
-              org.apache.kudu.*;
-            </_exportcontents>
-          </instructions>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>bundle</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <!-- Create the config file for artifact which can be used to deploy the artifact.
-               Sets the parents field to system:cdap-etl-batch and system:cdap-etl-realtime with whatever
-               version range is set in the etl.versionRange property.
-               also sets a widget and doc property for each file contained in the widgets and docs directories. -->
-          <execution>
-            <id>create-artifact-config</id>
-            <phase>prepare-package</phase>
-            <configuration>
-              <target>
-                <script language="javascript"> <![CDATA[
-
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>1.7</source>
+            <target>1.7</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>2.3.7</version>
+          <extensions>true</extensions>
+          <configuration>
+            <instructions>
+              <Embed-Dependency>*;inline=false;scope=compile</Embed-Dependency>
+              <Embed-Transitive>true</Embed-Transitive>
+              <Embed-Directory>lib</Embed-Directory>
+              <!--Only @Plugin classes in the export packages will be included as plugin-->
+              <_exportcontents>co.cask.kudu.*,org.apache.kudu.*</_exportcontents>
+            </instructions>
+          </configuration>
+          <executions>
+            <execution>
+              <phase>package</phase>
+              <goals>
+                <goal>bundle</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.7</version>
+          <executions>
+            <!-- Create the config file for artifact which can be used to deploy the artifact.
+                 Sets the parents field to system:cdap-etl-batch and system:cdap-etl-realtime with whatever
+                 version range is set in the etl.versionRange property.
+                 also sets a widget and doc property for each file contained in the widgets and docs directories. -->
+            <execution>
+              <id>create-artifact-config</id>
+              <phase>prepare-package</phase>
+              <configuration>
+                <target>
+                  <script language="javascript"> <![CDATA[
                   // for some reason, project.basedir evaluates to null if we just get the property here.
                   // so we set main.basedir to project.basedir in the pom properties, then main.basedir is used here
                   // where it evaluates correctly for whatever reason
@@ -445,15 +451,15 @@
                     cfgFile.createNewFile();
                   }
 
-                  var parents = project.getProperty("app.parents").split(",");
+                  var etlRange = project.getProperty("etl.versionRange");
                   var config = {
-                    "parents": [ ],
+                    "parents": [
+                      "system:cdap-data-pipeline" + etlRange,
+                      "system:cdap-data-streams" + etlRange,
+                      "system:cdap-etl-batch" + etlRange,
+                      "system:cdap-etl-realtime" + etlRange
+                    ],
                     "properties": {}
-                  }
-                  for (i = 0; i < parents.length; i+=2) {
-                    // because name1[lo,hi],name2[lo,hi] gets split into "name1[lo", "hi]", "name2[lo", "hi]"
-                    // so we have to combine them again
-                    config.parents.push(parents[i] + "," + parents[i+1]);
                   }
 
                   // look in widgets directory for widget config for each plugin
@@ -499,15 +505,103 @@
                   fw.write(JSON.stringify(config, null, 2));
                   fw.close();
                 ]]></script>
-              </target>
-            </configuration>
-            <goals>
-              <goal>run</goal>
-            </goals>
-          </execution>
-        </executions>
+                </target>
+              </configuration>
+              <goals>
+                <goal>run</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.14.1</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
+
+   <!-- Profile for release. Includes signing of jars. -->
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <!-- Source JAR -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.2.1</version>
+            <configuration>
+              <excludeResources>true</excludeResources>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Javadoc jar -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.9.1</version>
+            <configuration>
+              <links>
+                <link>http://download.oracle.com/javase/${jee.version}/docs/api/</link>
+              </links>
+              <doctitle>${project.name} ${project.version}</doctitle>
+              <bottom>
+                <![CDATA[Copyright &#169; {currentYear} <a href="http://example.org" target="_blank">Example Data, Inc.</a> Licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0" target="_blank">Apache License, Version 2.0</a>.]]>
+              </bottom>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadoc</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.5</version>
+            <configuration>
+              <passphrase>${gpg.passphrase}</passphrase>
+              <useAgent>${gpg.useagent}</useAgent>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
 
