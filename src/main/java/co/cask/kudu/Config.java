@@ -19,9 +19,11 @@ package co.cask.kudu;
 import co.cask.cdap.api.annotation.Description;
 import co.cask.cdap.api.annotation.Macro;
 import co.cask.cdap.api.annotation.Name;
+import co.cask.cdap.api.data.schema.Schema;
 import co.cask.hydrator.common.ReferencePluginConfig;
 import org.apache.kudu.ColumnSchema;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -38,7 +40,7 @@ public class Config extends ReferencePluginConfig {
   @Macro
   public String optTableName;
 
-  @Name("master-address")
+  @Name("master")
   @Description("Comma-separated list of hostname:port for Kudu masters")
   @Macro
   public String optMasterAddresses;
@@ -107,6 +109,20 @@ public class Config extends ReferencePluginConfig {
 
   public Config(String referenceName) {
     super(referenceName);
+  }
+
+  /**
+   * @return cleaned up master address.
+   */
+  public String getMasterAddress() {
+    return optMasterAddresses.trim();
+  }
+
+  /**
+   * @return cleaned up table name.
+   */
+  public String getTableName() {
+    return optTableName.trim();
   }
 
   /**
@@ -186,6 +202,14 @@ public class Config extends ReferencePluginConfig {
       c.add(column);
     }
     return c;
+  }
+
+  public Schema getSchema() {
+    try {
+      return Schema.parseJson(optSchema);
+    } catch (IOException e) {
+      throw new IllegalArgumentException("Unable to parse output schema.");
+    }
   }
 
   /**

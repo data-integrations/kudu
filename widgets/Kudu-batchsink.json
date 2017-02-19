@@ -21,7 +21,7 @@
         {
           "widget-type": "textbox",
           "label": "Master Addresses",
-          "name": "master-address",
+          "name": "master",
           "description": "Comma separated list of hostname:port of Apache Kudu Masters"
         },
         {
