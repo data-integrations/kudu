@@ -24,7 +24,6 @@ import org.apache.kudu.ColumnSchema;
 
 import java.util.HashSet;
 import java.util.Set;
-import javax.annotation.Nullable;
 
 /**
  * Plugin {@link co.cask.cdap.api.Config} for Apache Kudu
@@ -45,6 +44,7 @@ public class Config extends ReferencePluginConfig {
 
   @Name("schema")
   @Description("Output schema for the kudu table.")
+  @Macro
   public String optSchema;
 
 
@@ -52,56 +52,43 @@ public class Config extends ReferencePluginConfig {
 
   @Name("opt-timeout")
   @Description("Timeout for Kudu operations in milliseconds. Defaults is  '30000 ms'.")
-  @Nullable
-  @Macro
-  public long optOperationTimeoutMs;
+  public String optOperationTimeoutMs;
 
   @Name("admin-timeout")
   @Description("Administration operation time out. Default is '30000 ms'.")
-  @Nullable
-  @Macro
-  public long optAdminTimeoutMs;
+  public String optAdminTimeoutMs;
 
   @Name("seed")
   @Description("Seed to be used for hashing. Default is 'random seed'.")
-  @Nullable
-  @Macro
   public String optSeed;
 
   @Name("columns")
   @Description("List of columns that you would like to distribute data by. Default is 'all columns'")
-  @Nullable
-  @Macro
   public String optColumns;
 
   @Name("replicas")
   @Description("Specifies the number of replicas for the above table")
-  @Nullable
-  @Macro
-  public int optReplicas;
+  public String optReplicas;
 
   @Name("compression-algo")
   @Description("Compression algorithm to be applied on the columns. Default is 'snappy'")
-  @Nullable
-  @Macro
   public String optCompressionAlgorithm;
 
   @Name("encoding")
   @Description("Specifies the encoding to be applied on the schema. Default is 'auto'")
-  @Nullable
-  @Macro
   public String optEncoding;
 
   @Name("row-flush")
   @Description("Number of rows that are buffered before flushing to the tablet server")
-  @Nullable
-  @Macro
-  public int optFlushRows;
+  public String optFlushRows;
 
   @Name("buckets")
   @Description("Specifies the number of buckets to split the table into.")
-  @Macro
-  public int optBucketsCounts;
+  public String optBucketsCounts;
+
+  @Name("boss-threads")
+  @Description("Specifies the number of boss threads to be used by the client.")
+  private String optBossThreads;
 
   public Config(ColumnSchema.CompressionAlgorithm compression) {
     this("kudu");
@@ -109,22 +96,133 @@ public class Config extends ReferencePluginConfig {
 
   public Config(String referenceName) {
     super(referenceName);
-    this.optOperationTimeoutMs = 30000;
   }
 
+  /**
+   * @return Compression algorithm to be associated with all the fields.
+   */
   public ColumnSchema.CompressionAlgorithm getCompression() {
-    return ColumnSchema.CompressionAlgorithm.DEFAULT_COMPRESSION;
+    ColumnSchema.CompressionAlgorithm algorithm = ColumnSchema.CompressionAlgorithm.SNAPPY;
+
+    switch(optCompressionAlgorithm.toLowerCase()) {
+      case "snappy":
+        algorithm = ColumnSchema.CompressionAlgorithm.SNAPPY;
+        break;
+
+      case "lz4":
+        algorithm = ColumnSchema.CompressionAlgorithm.LZ4;
+        break;
+
+      case "zlib":
+        algorithm = ColumnSchema.CompressionAlgorithm.ZLIB;
+        break;
+
+      case "backend configured":
+        algorithm = ColumnSchema.CompressionAlgorithm.DEFAULT_COMPRESSION;
+        break;
+
+      case "No Compression":
+        algorithm = ColumnSchema.CompressionAlgorithm.NO_COMPRESSION;
+        break;
+    }
+    return algorithm;
   }
 
+  /**
+   * @return Encoding to be applied to all the columns.
+   */
   public ColumnSchema.Encoding getEncoding() {
-    return ColumnSchema.Encoding.AUTO_ENCODING;
+    ColumnSchema.Encoding encoding = ColumnSchema.Encoding.AUTO_ENCODING;
+    switch(optEncoding.toLowerCase()) {
+      case "auto":
+        encoding = ColumnSchema.Encoding.AUTO_ENCODING;
+        break;
+
+      case "plain":
+        encoding = ColumnSchema.Encoding.PLAIN_ENCODING;
+        break;
+
+      case "prefix":
+        encoding = ColumnSchema.Encoding.PREFIX_ENCODING;
+        break;
+
+      case "group variant":
+        encoding = ColumnSchema.Encoding.GROUP_VARINT;
+        break;
+
+      case "rle":
+        encoding = ColumnSchema.Encoding.RLE;
+        break;
+
+      case "dictionary":
+        encoding = ColumnSchema.Encoding.DICT_ENCODING;
+        break;
+
+      case "bit shuffle":
+        encoding = ColumnSchema.Encoding.BIT_SHUFFLE;
+        break;
+    }
+    return encoding;
   }
 
+  /**
+   * @return List of columns to be used in hash.
+   */
   public Set<String> getColumns() {
-    return new HashSet<>();
+    Set<String> c = new HashSet<>();
+    String[] columns = optColumns.split(",");
+    for (String column : columns) {
+      c.add(column);
+    }
+    return c;
   }
 
+  /**
+   * @return Number of replicas of a table on tablet servers.
+   */
+  public int getReplicas() {
+    return (optReplicas != null) ? Integer.parseInt(optReplicas) : 1;
+  }
+
+  /**
+   * @return Timeout for user operations.
+   */
+  public int getOperationTimeout() {
+    return (optOperationTimeoutMs != null) ? Integer.parseInt(optOperationTimeoutMs) : 30000;
+  }
+
+  /**
+   * @return Number of rows to be cached before being flushed.
+   */
+  public int getCacheRowCount() {
+    return (optFlushRows != null) ? Integer.parseInt(optFlushRows) : 30000;
+  }
+
+  /**
+   * @return Timeout for admin operations.
+   */
+  public int getAdministrationTimeout() {
+    return (optAdminTimeoutMs != null) ? Integer.parseInt(optAdminTimeoutMs) : 30000;
+  }
+
+  /**
+   * @return Number of buckets to be used for storing the rows.
+   */
   public int getBuckets() {
-    return 16;
+    return (optBucketsCounts != null) ? Integer.parseInt(optBucketsCounts) : 16;
+  }
+
+  /**
+   * @return Seed to be used for randomizing rows into hashed buckets.
+   */
+  public int getSeed() {
+    return (optSeed != null) ? Integer.parseInt(optSeed) : 0;
+  }
+
+  /**
+   * @return Number of boss threads to be used.
+   */
+  public int getThreads() {
+    return (optBossThreads != null) ? Integer.parseInt(optBossThreads) : 1;
   }
 }

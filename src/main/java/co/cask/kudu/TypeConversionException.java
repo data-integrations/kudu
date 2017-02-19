@@ -1,7 +1,7 @@
 package co.cask.kudu;
 
 /**
- * Created by nitin on 2/11/17.
+ * Exception thrown when there is issue with type conversion from CDAP pipeline schema to Kudu.
  */
 public class TypeConversionException extends Exception {
   public TypeConversionException(String s) {
