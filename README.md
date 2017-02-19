@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/hydrator/kudu-sink.svg?branch=master)](https://travis-ci.org/hydrator/kudu-sink) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Build Status](https://travis-ci.org/hydrator/kudu-sink.svg?branch=develop)](https://travis-ci.org/hydrator/kudu-sink) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 Kudu Sink
 ==========
@@ -35,7 +35,7 @@ The data types from the CDAP data pipeline are converted to Kudu types. Followin
 
 Quering from Impala
 *******************
-In order to query through Impala an external Impala table has to be created as follows : 
+Using this plugin creates a table within Kudu. If you are interested in querying through Impala, then you would have run the following query to create a reference to Kudu table as an external table within Impala. This can be achieved through ```impala-shell``` or HUE interface. 
 
 ```
 CREATE EXTERNAL TABLE `<table-name>` STORED AS KUDU
