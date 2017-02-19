@@ -5,7 +5,7 @@ Kudu Sink
 
 CDAP Plugin for ingesting data into Apache Kudu. Plugin can be configured for both batch and real-time pipelines.
 
-[Video showing how data can be ingested into Kudu](https://www.youtube.com/watch?v=KBW7a38vlUM)
+* [Video -- Showing how data can be ingested into Kudu](https://www.youtube.com/watch?v=KBW7a38vlUM)
 
 Following are the configurations supported by this Kudu Plugin.
 
