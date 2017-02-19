@@ -5,6 +5,9 @@ Kudu Sink
 
 CDAP Plugin for ingesting data into Apache Kudu. Plugin can be configured for both batch and real-time pipelines.
 
+
+<img align="center" src="docs/plugin.png" alt="plugin configuration" width="300"><img align="center" src="docs/pipeline.png" width="300" alt="pipeline with kudu plugin">
+
 * [Video -- Showing how data can be ingested into Kudu](https://www.youtube.com/watch?v=KBW7a38vlUM)
 
 Following are the configurations supported by this Kudu Plugin.
@@ -12,90 +15,26 @@ Following are the configurations supported by this Kudu Plugin.
 Configuration
 -------------
 
-**Required Fields**
-###################
-
-* _**Table Name**_
-
- This configuration specifies the Kudu table name to which the records will be written. This plugin checks if the table already exists. If it exists, it compares the schema of the existing table with the write schema specified for the plugin, If they don't match an error is thrown at configuration time and If the table doesn't exist, the table is created. 
-
-* _**Kudu Master Hosts**_
-
- Specifies the list of Kudu master hosts that this plugin will attempt connect to. It's a comma separated list of &lt;hostname&gt;:&lt;port&gt;. Connection is attempt after the plugin is initialized in the pipeline. 
- 
-* _**Schema**_
- 
- Specifies the write schema to be used to write to Kudu. 
-
-**Optional Fields**
-###################
-
-* _**Operation Timeout**_
-
- This configuration sets the timeout in milliseconds for user operations with Kudu. If you are writing large sized records it's recommended to increase the this time. It's defaulted to 30 seconds. 
- 
-* _**Administration Operation Timeout**_
-
- This configuration is used to set timeout in milliseconds for administrative operations like for creating table if table doesn't exist. This time is mainly used during initialize phase of the plugin when the table is created if it doesn't exist. 
- 
-* _**Columns to Hash**_
-
- Add a set of hash partitions to the above table. Each column specified here is part of tables primary key and a column will only appear in a single hash. 
- 
-* _**Hashing Seed**_
-
- The seed value specified is used to randomize mapping of rows to hash buckets. Setting the seed will ensure the hashed columns contain user provided values.
- 
-* _**Number of replicas**_
-
- Specifies the number of replicas for the above table. This will specify the number of replicas that each tablet will have. By default it will use the default set on the server side and that is generally 3. 
- 
-* _**Column Compression Algorithm**_
-
- Specifies the compression algorithm to be used for the columns. Following are different options available. 
-  * Default Compression (Snappy)
-  * No Compression
-  * Snappy Compression
-  * LZ4 Compression
-  * ZLib Compression
-  
-* _**Encoding**_
-
- Specifies the block encoding for the column. Following are different options available. 
- 
-  * Auto Encoding
-  * Plain Encoding
-  * Prefix Encoding
-  * Group Varint Encoding
-  * Run Length Encoding (RLE)
-  * Dictionary Encoding
-  * Bit Shuffle Encoding
-
+| Configuration | Required | Default | Description |
+| ------------- | -------- | ------- | ----------- |
+| Table Name | Y | N/A | This configuration specifies the Kudu table name to which the records will be written. This plugin checks if the table already exists. If it exists, it compares the schema of the existing table with the write schema specified for the plugin, If they don't match an error is thrown at configuration time and If the table doesn't exist, the table is created.| 
+| Kudu Master Host | Y | N/A | Specifies the list of Kudu master hosts that this plugin will attempt connect to. It's a comma separated list of &lt;hostname&gt;:&lt;port&gt;. Connection is attempt after the plugin is initialized in the pipeline.  |
+| Field to Hash | Y | N/A | Specifies the list of fields from the input that should be considered as hashing keys. All the fields should be non-null |
+| Operation Timeout | N | 30000ms | This configuration sets the timeout in milliseconds for user operations with Kudu. If you are writing large sized records it's recommended to increase the this time. It's defaulted to 30 seconds. |
+| Admin Timeout | N | 30000ms | This configuration is used to set timeout in milliseconds for administrative operations like for creating table if table doesn't exist. This time is mainly used during initialize phase of the plugin when the table is created if it doesn't exist. |
+| Hash seed | N | 1 | The seed value specified is used to randomize mapping of rows to hash buckets. Setting the seed will ensure the hashed columns contain user provided values.| 
+| Number of replicas | N | 1 | Specifies the number of replicas for the above table. This will specify the number of replicas that each tablet will have. By default it will use the default set on the server side and that is generally 1.| 
+| Compression Algorithm | N | Snappy | Specifies the compression algorithm to be used for the columns. Following are different options available. |
+| Encoding | N | Auto Encoding | Specifies the block encoding for the column. Following are different options available.  |
 
 Build
 -----
-To build your plugins:
+To build this plugin:
 
     mvn clean package -DskipTests
 
 The build will create a .jar and .json file under the ``target`` directory.
 These files can be used to deploy your plugins.
-
-UI Integration
---------------
-The Cask Hydrator UI displays each plugin property as a simple textbox. To customize how the plugin properties
-are displayed in the UI, you can place a configuration file in the ``widgets`` directory.
-The file must be named following a convention of ``[plugin-name]-[plugin-type].json``.
-
-See [Plugin Widget Configuration](http://docs.cdap.io/cdap/current/en/hydrator-manual/developing-plugins/packaging-plugins.html#plugin-widget-json)
-for details on the configuration file.
-
-The UI will also display a reference doc for your plugin if you place a file in the ``docs`` directory
-that follows the convention of ``[plugin-name]-[plugin-type].md``.
-
-When the build runs, it will scan the ``widgets`` and ``docs`` directories in order to build an appropriately
-formatted .json file under the ``target`` directory. This file is deployed along with your .jar file to add your
-plugins to CDAP.
 
 Deployment
 ----------
@@ -103,6 +42,41 @@ You can deploy your plugins using the CDAP CLI:
 
     > load artifact <target/plugin.jar> config-file <target/plugin.json>
 
-For example, if your artifact is named 'my-plugins-1.0.0':
+For example, if your artifact is named 'kudu-sink-1.0.0':
 
-    > load artifact target/my-plugins-1.0.0.jar config-file target/my-plugins-1.0.0.json
+    > load artifact target/kudu-sink-1.0.0.jar config-file target/kudu-sink-1.0.0.json
+    
+## Mailing Lists
+
+CDAP User Group and Development Discussions:
+
+- `cdap-user@googlegroups.com <https://groups.google.com/d/forum/cdap-user>`__
+
+The *cdap-user* mailing list is primarily for users using the product to develop
+applications or building plugins for appplications. You can expect questions from 
+users, release announcements, and any other discussions that we think will be helpful 
+to the users.
+
+## IRC Channel
+
+CDAP IRC Channel: #cdap on irc.freenode.net
+
+
+## License and Trademarks
+
+Copyright © 2016-2017 Cask Data, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the 
+License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+either express or implied. See the License for the specific language governing permissions 
+and limitations under the License.
+
+Cask is a trademark of Cask Data, Inc. All rights reserved.
+
+Apache, Apache HBase, and HBase are trademarks of The Apache Software Foundation. Used with
+permission. No endorsement by The Apache Software Foundation is implied by the use of these marks.    
