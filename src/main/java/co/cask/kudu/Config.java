@@ -24,6 +24,7 @@ import org.apache.kudu.ColumnSchema;
 
 import java.util.HashSet;
 import java.util.Set;
+import javax.annotation.Nullable;
 
 /**
  * Plugin {@link co.cask.cdap.api.Config} for Apache Kudu
@@ -52,42 +53,52 @@ public class Config extends ReferencePluginConfig {
 
   @Name("opt-timeout")
   @Description("Timeout for Kudu operations in milliseconds. Defaults is  '30000 ms'.")
+  @Nullable
   public String optOperationTimeoutMs;
 
   @Name("admin-timeout")
   @Description("Administration operation time out. Default is '30000 ms'.")
+  @Nullable
   public String optAdminTimeoutMs;
 
   @Name("seed")
-  @Description("Seed to be used for hashing. Default is 'random seed'.")
+  @Description("Seed to be used for hashing. Default is 0")
+  @Nullable
   public String optSeed;
 
   @Name("columns")
   @Description("List of columns that you would like to distribute data by. Default is 'all columns'")
+  @Nullable
   public String optColumns;
 
   @Name("replicas")
   @Description("Specifies the number of replicas for the above table")
+  @Nullable
   public String optReplicas;
 
   @Name("compression-algo")
   @Description("Compression algorithm to be applied on the columns. Default is 'snappy'")
+  @Nullable
   public String optCompressionAlgorithm;
 
   @Name("encoding")
   @Description("Specifies the encoding to be applied on the schema. Default is 'auto'")
+  @Nullable
   public String optEncoding;
 
   @Name("row-flush")
   @Description("Number of rows that are buffered before flushing to the tablet server")
+  @Nullable
   public String optFlushRows;
 
   @Name("buckets")
   @Description("Specifies the number of buckets to split the table into.")
+  @Nullable
   public String optBucketsCounts;
 
   @Name("boss-threads")
   @Description("Specifies the number of boss threads to be used by the client.")
+  @Nullable
   private String optBossThreads;
 
   public Config(ColumnSchema.CompressionAlgorithm compression) {
