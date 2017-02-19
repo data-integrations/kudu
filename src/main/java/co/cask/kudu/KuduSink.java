@@ -154,11 +154,20 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     }
   }
 
+  /**
+   * Prepares for the run by specific the provider that encapusulates {@link KuduTableOutputFormat}.
+   * @param context of runtime for this plugin.
+   */
   @Override
   public void prepareRun(BatchSinkContext context) throws Exception {
     context.addOutput(Output.of(config.referenceName, new KuduOutputFormatProvider(config)));
   }
 
+  /**
+   * Initializes the plugin by initiating connection to Kudu using the client.
+   *
+   * @param context of the plugin.
+   */
   @Override
   public void initialize(BatchRuntimeContext context) throws Exception {
     super.initialize(context);
@@ -173,6 +182,12 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     table = client.openTable(config.optTableName);
   }
 
+  /**
+   * Transform the {@link StructuredRecord} into the Kudu operations.
+   *
+   * @param input A single {@link StructuredRecord} instance
+   * @param emitter for emitting records to Kudu Output format.
+   */
   @Override
   public void transform(StructuredRecord input, Emitter<KeyValue<NullWritable, Operation>> emitter) throws Exception {
     Upsert upsert = table.newUpsert();
@@ -186,6 +201,12 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     emitter.emit(new KeyValue<NullWritable, Operation>(NullWritable.get(), upsert));
   }
 
+  /**
+   * Called when the run is completed, release all the resources acquired during initialize.
+   *
+   * @param succeeded provides the status of the run.
+   * @param context context to this plugin.
+   */
   @Override
   public void onRunFinish(boolean succeeded, BatchSinkContext context) {
     try {
@@ -317,7 +338,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
       return Type.FLOAT;
     } else if (type == Schema.Type.BOOLEAN) {
       return Type.BOOL;
-    } else if (type == Schema.Type.UNION) {
+    } else if (type == Schema.Type.UNION) { // Recursively drill down into the non-nullable type.
       return toKuduType(name, schema.getNonNullable());
     } else {
       throw new TypeConversionException(
@@ -360,7 +381,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   }
 
   /**
-   *
+   * Provider for Kudu Output format.
    */
   private class KuduOutputFormatProvider implements OutputFormatProvider {
 
