@@ -25,8 +25,8 @@
           "description": "Comma separated list of hostname:port of Apache Kudu Masters"
         },
         {
-          "widget-type": "input-field-selector",
-          "label": "Input columns to be used as keys",
+          "widget-type": "textbox",
+          "label": "Columns to be used as hash keys (comma separated list of values)",
           "name": "columns"
         }
       ]
