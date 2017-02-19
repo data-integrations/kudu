@@ -54,7 +54,7 @@ For example, if your artifact is named 'kudu-sink-1.0.0':
 
 CDAP User Group and Development Discussions:
 
-- `cdap-user@googlegroups.com <https://groups.google.com/d/forum/cdap-user>`__
+* `cdap-user@googlegroups.com <https://groups.google.com/d/forum/cdap-user>`
 
 The *cdap-user* mailing list is primarily for users using the product to develop
 applications or building plugins for appplications. You can expect questions from 
