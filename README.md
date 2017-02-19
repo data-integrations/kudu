@@ -17,6 +17,12 @@ This plugin creates Kudu table on deployment if the table does not exist. When t
 
 Kudu plugin uses ```UPSERT``` capability to write to Kudu. 
 
+
+Table Creation
+****************
+
+When the plugin is used witin a pipeline and it's configured to use macros either for ```table name``` or ```master address``` or both, the table creation is delayed till the pipeline is started. But, if they are no macros they are created at the deployment time. In both cases, the schema validation is done. 
+
 Type Conversions
 ****************
 
