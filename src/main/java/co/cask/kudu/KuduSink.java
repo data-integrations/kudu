@@ -68,7 +68,7 @@ import java.util.Set;
 public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable, Operation> {
   private static final Logger LOG = LoggerFactory.getLogger(KuduSink.class);
 
-  private final Config config;
+  private final KuduSinkConfig kuduSinkConfig;
 
   // Kudu client and table.
   private KuduClient client;
@@ -77,9 +77,9 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   // Write schema associated with the pipeline.
   private Schema outputSchema;
 
-  public KuduSink(Config config) {
-    super(config);
-    this.config = config;
+  public KuduSink(KuduSinkConfig kuduSinkConfig) {
+    super(kuduSinkConfig);
+    this.kuduSinkConfig = kuduSinkConfig;
   }
 
   /**
@@ -94,16 +94,16 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   @Override
   public void configurePipeline(PipelineConfigurer configurer) {
     super.configurePipeline(configurer);
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(config.optSchema), "Write schema is not specified. Please add" +
+    Preconditions.checkArgument(!Strings.isNullOrEmpty(kuduSinkConfig.optSchema), "Write schema is not specified. Please add" +
       "the write schema.");
 
     // Checks if that we are writing with has been constructed correctly.
-    Schema writeSchema = config.getSchema();
+    Schema writeSchema = kuduSinkConfig.getSchema();
     configurer.getStageConfigurer().setOutputSchema(writeSchema);
 
     // If there is macro specified for 'master' address or table name, then
     // we defer the creation of table to initialize.
-    if (config.containsMacro("master") || config.containsMacro("name")) {
+    if (kuduSinkConfig.containsMacro("master") || kuduSinkConfig.containsMacro("name")) {
       return;
     }
     createKuduTable();
@@ -119,7 +119,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     // table here during initialization. If it's not a macro, then we
     // just open the the table and proceed.
     createKuduTable();
-    context.addOutput(Output.of(config.referenceName, new KuduOutputFormatProvider(config)));
+    context.addOutput(Output.of(kuduSinkConfig.referenceName, new KuduOutputFormatProvider(kuduSinkConfig)));
   }
 
   /**
@@ -131,15 +131,15 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   public void initialize(BatchRuntimeContext context) throws Exception {
     super.initialize(context);
     // Parsing the schema should never fail here, because configure has validated it.
-    outputSchema = config.getSchema();
-    client = new KuduClient.KuduClientBuilder(config.getMasterAddress())
-      .defaultOperationTimeoutMs(config.getOperationTimeout())
-      .defaultAdminOperationTimeoutMs(config.getAdministrationTimeout())
+    outputSchema = kuduSinkConfig.getSchema();
+    client = new KuduClient.KuduClientBuilder(kuduSinkConfig.getMasterAddress())
+      .defaultOperationTimeoutMs(kuduSinkConfig.getOperationTimeout())
+      .defaultAdminOperationTimeoutMs(kuduSinkConfig.getAdministrationTimeout())
       .disableStatistics()
-      .bossCount(config.getThreads())
+      .bossCount(kuduSinkConfig.getThreads())
       .build();
 
-    table = client.openTable(config.getTableName());
+    table = client.openTable(kuduSinkConfig.getTableName());
   }
 
   /**
@@ -192,44 +192,44 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     // NOTE: I am not sure if this is the right place for this to happen, but
     // not sure if it's the right place during initialization to create the
     // table if it doesn't exit.
-    KuduClient localClient = new KuduClient.KuduClientBuilder(config.getMasterAddress())
-      .defaultOperationTimeoutMs(config.getOperationTimeout())
-      .defaultAdminOperationTimeoutMs(config.getAdministrationTimeout())
+    KuduClient localClient = new KuduClient.KuduClientBuilder(kuduSinkConfig.getMasterAddress())
+      .defaultOperationTimeoutMs(kuduSinkConfig.getOperationTimeout())
+      .defaultAdminOperationTimeoutMs(kuduSinkConfig.getAdministrationTimeout())
       .disableStatistics()
-      .bossCount(config.getThreads())
+      .bossCount(kuduSinkConfig.getThreads())
       .build();
 
-    Schema writeSchema = config.getSchema();
+    Schema writeSchema = kuduSinkConfig.getSchema();
     // Check if the table exists, if table does not exist, then create one
     // with schema defined in the write schema.
     try {
-      if (!localClient.tableExists(this.config.getTableName())) {
+      if (!localClient.tableExists(this.kuduSinkConfig.getTableName())) {
         // Convert the writeSchema into Kudu schema.
-        List<ColumnSchema> columnSchemas = toKuduSchema(writeSchema, config.getColumns(),
-                                                        config.getCompression(), config.getEncoding());
+        List<ColumnSchema> columnSchemas = toKuduSchema(writeSchema, kuduSinkConfig.getColumns(),
+                                                        kuduSinkConfig.getCompression(), kuduSinkConfig.getEncoding());
         org.apache.kudu.Schema kuduSchema = new org.apache.kudu.Schema(columnSchemas);
         CreateTableOptions options = new CreateTableOptions();
-        options.addHashPartitions(new ArrayList<>(config.getColumns()), config.getBuckets(), config.getSeed());
+        options.addHashPartitions(new ArrayList<>(kuduSinkConfig.getColumns()), kuduSinkConfig.getBuckets(), kuduSinkConfig.getSeed());
 
         try {
           KuduTable table =
-            localClient.createTable(config.getTableName(), kuduSchema, options);
-          LOG.info("Successfully create Kudu table '%s', Table ID '%s'", config.getTableName(), table.getTableId());
+            localClient.createTable(kuduSinkConfig.getTableName(), kuduSchema, options);
+          LOG.info("Successfully create Kudu table '%s', Table ID '%s'", kuduSinkConfig.getTableName(), table.getTableId());
         } catch (KuduException e) {
           throw new RuntimeException(
-            String.format("Unable to create table '%s'. Reason : %s", config.getTableName(), e.getMessage())
+            String.format("Unable to create table '%s'. Reason : %s", kuduSinkConfig.getTableName(), e.getMessage())
           );
         }
       } else {
         // If the table exists in Kudu, compare the schema and make sure they are the same.
         // If they are not the same then throw an exception.
-        KuduTable table = localClient.openTable(config.getTableName());
+        KuduTable table = localClient.openTable(kuduSinkConfig.getTableName());
         org.apache.kudu.Schema kuduSchema = table.getSchema();
         checkSchemaCompatibility(kuduSchema, writeSchema);
       }
     } catch (KuduException e) {
       String msg = String.format("Unable to check if the table '%s' exists in kudu. Reason : %s",
-                                 config.getTableName(), e.getMessage());
+                                 kuduSinkConfig.getTableName(), e.getMessage());
       LOG.warn(msg);
       throw new RuntimeException(e);
     } catch (TypeConversionException e) {
@@ -313,7 +313,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
       if (writeSchema.getField(kName) == null) {
         throw new RuntimeException(
           String.format("Kudu table '%s' has a field '%s' that does not exist in your write schema. Please" +
-                          "make the appropriate change and re-submit the pipeline.", config.optTableName,
+                          "make the appropriate change and re-submit the pipeline.", kuduSinkConfig.optTableName,
                         kName)
         );
       } else {
@@ -323,14 +323,14 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
             throw new RuntimeException(
               String.format("Kudu table '%s' has a field '%s' that does not match the type in your write schema. " +
                               "Please change the type of field '%s' and re-submit",
-                            config.getTableName(), kName, kName)
+                            kuduSinkConfig.getTableName(), kName, kName)
             );
           }
         } catch (TypeConversionException e) {
           throw new RuntimeException(
             String.format("Kudu table '%s' has a field '%s' that has type that is not supported by kudu. Please" +
                             "change the type of field '%s' to one supported by Kudu and re-submit",
-                          config.getTableName(), kName, kName)
+                          kuduSinkConfig.getTableName(), kName, kName)
           );
         }
       }
@@ -409,12 +409,12 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
 
     private final Map<String, String> conf;
 
-    KuduOutputFormatProvider(Config config) throws IOException {
+    KuduOutputFormatProvider(KuduSinkConfig kuduSinkConfig) throws IOException {
       this.conf = new HashMap<>();
-      this.conf.put("kudu.mapreduce.master.addresses", config.getMasterAddress());
-      this.conf.put("kudu.mapreduce.output.table", config.getTableName());
-      this.conf.put("kudu.mapreduce.operation.timeout.ms", String.valueOf(config.getOperationTimeout()));
-      this.conf.put("kudu.mapreduce.buffer.row.count", config.optFlushRows);
+      this.conf.put("kudu.mapreduce.master.addresses", kuduSinkConfig.getMasterAddress());
+      this.conf.put("kudu.mapreduce.output.table", kuduSinkConfig.getTableName());
+      this.conf.put("kudu.mapreduce.operation.timeout.ms", String.valueOf(kuduSinkConfig.getOperationTimeout()));
+      this.conf.put("kudu.mapreduce.buffer.row.count", kuduSinkConfig.optFlushRows);
     }
 
     @Override
