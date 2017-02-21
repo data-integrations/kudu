@@ -91,28 +91,32 @@ public class KuduSource extends ReferenceBatchSource<NullWritable, RowResult, St
     for (ColumnSchema column : kSchema.getColumns()) {
       Type type = column.getType();
       String name = column.getName();
-      if (type == Type.BINARY) {
-        record.set(name, result.getBinaryCopy(name));
-      } else if (type == Type.BOOL) {
-        record.set(name, result.getBoolean(name));
-      } else if (type == Type.DOUBLE) {
-        record.set(name, result.getDouble(name));
-      } else if (type == Type.FLOAT) {
-        record.set(name, result.getFloat(name));
-      } else if (type == Type.INT32) {
-        record.set(name, result.getInt(name));
-      } else if (type == Type.INT64) {
-        record.set(name, result.getLong(name));
-      } else if (type == Type.INT16) {
-        record.set(name, (int)result.getShort(name));
-      } else if (type == Type.INT8) {
-        record.set(name, (int) (result.getByte(name) & MASK));
-      } else if (type == Type.STRING) {
-        record.set(name, result.getString(name));
+      if (result.isNull(name)) {
+        record.set(name, null);
       } else {
-        throw new Exception(
-          String.format("Unsupported type '%s', field '%s'", type.toString(), name)
-        );
+        if (type == Type.BINARY) {
+          record.set(name, result.getBinaryCopy(name));
+        } else if (type == Type.BOOL) {
+          record.set(name, result.getBoolean(name));
+        } else if (type == Type.DOUBLE) {
+          record.set(name, result.getDouble(name));
+        } else if (type == Type.FLOAT) {
+          record.set(name, result.getFloat(name));
+        } else if (type == Type.INT32) {
+          record.set(name, result.getInt(name));
+        } else if (type == Type.INT64) {
+          record.set(name, result.getLong(name));
+        } else if (type == Type.INT16) {
+          record.set(name, (int) result.getShort(name));
+        } else if (type == Type.INT8) {
+          record.set(name, (int) (result.getByte(name) & MASK));
+        } else if (type == Type.STRING) {
+          record.set(name, result.getString(name));
+        } else {
+          throw new Exception(
+            String.format("Unsupported type '%s', field '%s'", type.toString(), name)
+          );
+        }
       }
     }
 

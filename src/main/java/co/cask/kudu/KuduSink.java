@@ -156,7 +156,9 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     for (Schema.Field field : fields) {
       Object val = input.get(field.getName());
       Schema schema = field.getSchema();
-      createKuduRow(row, field.getName(), schema, val);
+      if (val != null) {
+        createKuduRow(row, field.getName(), schema, val);
+      }
     }
     emitter.emit(new KeyValue<NullWritable, Operation>(NullWritable.get(), upsert));
   }
