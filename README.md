@@ -13,7 +13,7 @@ Build
 To build this plugin:
 
 ```
-   mvn clean package -DskipTests
+   mvn clean package
 ```    
 
 The build will create a .jar and .json file under the ``target`` directory.
