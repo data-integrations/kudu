@@ -5,8 +5,8 @@ Kudu Source & Sink
 
 CDAP Plugin for ingesting from Kudu tables as well as for writing to Kudu table. Plugins can be configured for both batch and real-time pipelines.
 
-* [Kudu Source](KUDU-SOURCE.md)
-* [Kudu Sink](KUDU-SINK.md)
+* [Kudu Source](docs/KUDU-SOURCE.md)
+* [Kudu Sink](docs/KUDU-SINK.md)
 
 Build
 -----
