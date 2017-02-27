@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 /**
  * Plugin {@link co.cask.cdap.api.Config} for Apache Kudu
  */
-public class Config extends ReferencePluginConfig {
+public class KuduSinkConfig extends ReferencePluginConfig {
 
   // Required Fields.
 
@@ -103,11 +103,11 @@ public class Config extends ReferencePluginConfig {
   @Nullable
   private String optBossThreads;
 
-  public Config(ColumnSchema.CompressionAlgorithm compression) {
+  public KuduSinkConfig(ColumnSchema.CompressionAlgorithm compression) {
     this("kudu");
   }
 
-  public Config(String referenceName) {
+  public KuduSinkConfig(String referenceName) {
     super(referenceName);
   }
 

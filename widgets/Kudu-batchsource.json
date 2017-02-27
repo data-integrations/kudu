@@ -1,0 +1,86 @@
+{
+  "metadata": {
+    "spec-version": "1.0"
+  },
+  "configuration-groups": [
+    {
+      "label": "Kudu Configuration",
+      "properties": [
+        {
+          "widget-type" : "textbox",
+          "label" : "Reference Name",
+          "name" : "referenceName",
+          "description" : "Reference specifies the name to be used to track this external source"
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Table Name",
+          "name": "name",
+          "description": "Name of the Kudu table."
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Master Addresses",
+          "name": "master",
+          "description": "Comma separated list of <hostname>:<port>[,<hostanme>:<port>]* of Apache Kudu Masters."
+        },
+        {
+          "widget-type": "textbox",
+          "label": "Projected Columns",
+          "name": "columns",
+          "description" : "Columns to be projected from the table. Specified as list of comma separated column names. Star(*) for all columns, which is default.",
+          "widget-attributes" : {
+            "default" : "*"
+          },
+          "plugin-function": {
+            "method": "POST",
+            "label": "Generate Table Schema",
+            "widget": "outputSchema",
+            "output-property": "schema",
+            "plugin-method": "getSchema",
+            "position": "bottom",
+            "multiple-inputs": true,
+            "button-class": "btn-hydrator"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Kudu Advanced Options",
+      "properties" : [
+        {
+          "widget-type": "number",
+          "label": "User operations timeout (DEFAULT: 10000 ms)",
+          "description" : "Specifies the user operation timeout in milliseconds. Increase this if you see timeouts when connecting to Kudu",
+          "name": "opt-timeout",
+          "widget-attributes" : {
+            "default" : 10000
+          }
+        }
+      ]
+    }
+  ],
+  "jump-config": {
+    "datasets": [{
+      "ref-property-name": "tableName"
+    }]
+  },
+  "outputs": [
+    {
+      "name": "schema",
+      "widget-type": "schema",
+      "widget-attributes": {
+        "schema-types": [
+          "boolean",
+          "int",
+          "long",
+          "float",
+          "double",
+          "bytes",
+          "string"
+        ],
+        "schema-default-type": "string"
+      }
+    }
+  ]
+}
