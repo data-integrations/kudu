@@ -8,8 +8,6 @@ CDAP Plugin for ingesting from Kudu tables as well as for writing to Kudu table.
 * [Kudu Source](KUDU-SOURCE.md)
 * [Kudu Sink](KUDU-SINK.md)
 
-[Video -- Showing how data can be ingested into Kudu](https://www.youtube.com/watch?v=KBW7a38vlUM)
-
 Build
 -----
 To build this plugin:
