@@ -23,7 +23,7 @@ Deployment
 ----------
 You can deploy your plugins using the CDAP CLI:
 
-    > load artifact <target/kudu-plugins-<version>.jar> config-file <target/kudu-plugins-<version>.json>
+    > load artifact <target/kudu-plugins-<version>.jar config-file <target/kudu-plugins-<version>.json>
 
 For example, if your artifact is named 'kudu-plugins-<version>':
 
