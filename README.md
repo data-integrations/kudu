@@ -1,7 +1,7 @@
 Kudu Source & Sink
 ===================
 
-<a href="https://cdap-users.herokuapp.com/"><img alt="Join CDAP community" src="https://cdap-users.herokuapp.com/badge.svg?t=1"/></a> [![Build Status](https://travis-ci.org/hydrator/kudu-sink.svg?branch=develop)](https://travis-ci.org/hydrator/kudu-sink) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+<a href="https://cdap-users.herokuapp.com/"><img alt="Join CDAP community" src="https://cdap-users.herokuapp.com/badge.svg?t=1"/></a> [![Build Status](https://travis-ci.org/hydrator/kudu-sink.svg?branch=develop)](https://travis-ci.org/hydrator/kudu-sink) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) <img src="https://cdap-users.herokuapp.com/assets/cdap-realtime-sink.svg"/> <img src="https://cdap-users.herokuapp.com/assets/cdap-batch-sink.svg"/>
 
 CDAP Plugin for ingesting from Kudu tables as well as for writing to Kudu table. Plugins can be configured for both batch and real-time pipelines.
 
