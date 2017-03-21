@@ -5,8 +5,8 @@ Kudu Source
 
 CDAP Plugin for reading data from Apache Kudu table. 
 
-<img align="center" src="docs/plugin.png"  width="400" alt="plugin configuration" />
-<img align="center" src="docs/generate-schema.png" width="400" alt="pipeline with kudu plugin"/>
+<img align="center" src="plugin-source.png"  width="400" alt="plugin configuration" />
+<img align="center" src="generate-schema-source.png" width="400" alt="pipeline with kudu plugin"/>
 
 Usage Notes
 -----------

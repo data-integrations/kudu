@@ -84,7 +84,7 @@
         },
         {
           "widget-type": "number",
-          "label": "Uer operations timeout in milliseconds (DEFAULT: 30000ms)",
+          "label": "User operations timeout in milliseconds (DEFAULT: 30000ms)",
           "name": "opt-timeout",
           "widget-attributes" : {
             "default" : 30000
