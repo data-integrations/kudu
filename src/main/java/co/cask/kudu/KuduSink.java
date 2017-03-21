@@ -106,15 +106,6 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
     if (kuduSinkConfig.containsMacro("master") || kuduSinkConfig.containsMacro("name")) {
       return;
     }
-
-    // Check if columns are not specified.
-    Set<String> columns = kuduSinkConfig.getColumns();
-    if (columns.size() < 1) {
-      throw new IllegalArgumentException(
-        String.format("Please specify the list of columns to be used to distribute your data.")
-      );
-    }
-
     createKuduTable();
   }
 

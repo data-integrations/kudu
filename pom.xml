@@ -20,11 +20,11 @@
 
   <groupId>co.cask</groupId>
   <artifactId>kudu-sink</artifactId>
-  <version>1.0.1</version>
+    <version>1.0.1</version>
   <packaging>jar</packaging>
 
-  <name>Kudu Source and Sink</name>
-  <description>Kudu Source and Sink for Batch and Realtime Pipelines</description>
+  <name>Kudu Sink</name>
+  <description>Kudu Sink for Batch and Realtime Pipelines</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
