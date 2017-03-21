@@ -23,11 +23,11 @@ Deployment
 ----------
 You can deploy your plugins using the CDAP CLI:
 
-    > load artifact <target/plugin.jar> config-file <target/plugin.json>
+    > load artifact <target/kudu-plugins-<version>.jar> config-file <target/kudu-plugins-<version>.json>
 
-For example, if your artifact is named 'kudu-sink-1.0.0':
+For example, if your artifact is named 'kudu-plugins-<version>':
 
-    > load artifact target/kudu-sink-1.0.0.jar config-file target/kudu-sink-1.0.0.json
+    > load artifact target/kudu-plugins-<version>.jar config-file target/kudu-plugins-<version>.json
     
 ## Mailing Lists
 
