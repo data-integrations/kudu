@@ -50,6 +50,9 @@ public class KuduSinkConfig extends ReferencePluginConfig {
   @Macro
   public String optSchema;
 
+  @Name("columns")
+  @Description("List of columns that you would like to distribute data by.")
+  public String optColumns;
 
   // Options Fields
 
@@ -67,11 +70,6 @@ public class KuduSinkConfig extends ReferencePluginConfig {
   @Description("Seed to be used for hashing. Default is 0")
   @Nullable
   public String optSeed;
-
-  @Name("columns")
-  @Description("List of columns that you would like to distribute data by. Default is 'all columns'")
-  @Nullable
-  public String optColumns;
 
   @Name("replicas")
   @Description("Specifies the number of replicas for the above table")
@@ -197,9 +195,11 @@ public class KuduSinkConfig extends ReferencePluginConfig {
    */
   public Set<String> getColumns() {
     Set<String> c = new HashSet<>();
-    String[] columns = optColumns.split(",");
-    for (String column : columns) {
-      c.add(column);
+    if (optColumns != null && !optColumns.isEmpty()) {
+      String[] columns = optColumns.split(",");
+      for (String column : columns) {
+        c.add(column);
+      }
     }
     return c;
   }
