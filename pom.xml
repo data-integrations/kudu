@@ -19,11 +19,11 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>co.cask</groupId>
-  <artifactId>kudu-sink</artifactId>
-  <version>1.0.1</version>
+  <artifactId>kudu-plugins</artifactId>
+    <version>1.0.1</version>
   <packaging>jar</packaging>
 
-  <name>Kudu Source and Sink</name>
+  <name>Kudu Source annd Sink</name>
   <description>Kudu Source and Sink for Batch and Realtime Pipelines</description>
 
   <properties>
