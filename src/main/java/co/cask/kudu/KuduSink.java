@@ -211,6 +211,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
                                                         kuduSinkConfig.getCompression(), kuduSinkConfig.getEncoding());
         org.apache.kudu.Schema kuduSchema = new org.apache.kudu.Schema(columnSchemas);
         CreateTableOptions options = new CreateTableOptions();
+        options.setNumReplicas(kuduSinkConfig.getReplicas());
         options.addHashPartitions(new ArrayList<>(kuduSinkConfig.getColumns()), kuduSinkConfig.getBuckets(), kuduSinkConfig.getSeed());
 
         try {
