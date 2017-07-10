@@ -20,7 +20,7 @@
 
   <groupId>co.cask</groupId>
   <artifactId>kudu-plugins</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Kudu Source annd Sink</name>
