@@ -211,6 +211,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
                                                         kuduSinkConfig.getCompression(), kuduSinkConfig.getEncoding());
         org.apache.kudu.Schema kuduSchema = new org.apache.kudu.Schema(columnSchemas);
         CreateTableOptions options = new CreateTableOptions();
+        options.setNumReplicas(kuduSinkConfig.getReplicas());
         options.addHashPartitions(new ArrayList<>(kuduSinkConfig.getColumns()), kuduSinkConfig.getBuckets(), kuduSinkConfig.getSeed());
 
         try {
@@ -301,7 +302,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   private void checkSchemaCompatibility(org.apache.kudu.Schema kuduSchema, Schema writeSchema) {
     if (kuduSchema.getColumns().size() != writeSchema.getFields().size()) {
       throw new RuntimeException(
-        String.format("Kudu table '%s' and write schema do not have same number of columns. " +
+        String.format("Kudu table schema and write schema do not have same number of columns. " +
                         "Please fix schema and re-submit.")
       );
     }
