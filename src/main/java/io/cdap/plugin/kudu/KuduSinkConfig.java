@@ -1,5 +1,5 @@
 /*
- * Copyright © 2017 Cask Data, Inc.
+ * Copyright © 2017-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,13 +14,13 @@
  * the License.
  */
 
-package co.cask.kudu;
+package io.cdap.plugin.kudu;
 
-import co.cask.cdap.api.annotation.Description;
-import co.cask.cdap.api.annotation.Macro;
-import co.cask.cdap.api.annotation.Name;
-import co.cask.cdap.api.data.schema.Schema;
-import co.cask.hydrator.common.ReferencePluginConfig;
+import io.cdap.cdap.api.annotation.Description;
+import io.cdap.cdap.api.annotation.Macro;
+import io.cdap.cdap.api.annotation.Name;
+import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.plugin.common.ReferencePluginConfig;
 import org.apache.kudu.ColumnSchema;
 
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 /**
- * Plugin {@link co.cask.cdap.api.Config} for Apache Kudu
+ * Plugin {@link io.cdap.cdap.api.Config} for Apache Kudu
  */
 public class KuduSinkConfig extends ReferencePluginConfig {
 

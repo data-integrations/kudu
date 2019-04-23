@@ -1,4 +1,4 @@
-package co.cask.kudu;
+package io.cdap.plugin.kudu;
 
 /**
  * Created by nitin on 2/11/17.
