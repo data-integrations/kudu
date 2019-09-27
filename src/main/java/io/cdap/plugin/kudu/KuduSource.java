@@ -24,6 +24,7 @@ import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.etl.api.Emitter;
+import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.cdap.etl.api.PipelineConfigurer;
 import io.cdap.cdap.etl.api.batch.BatchSource;
 import io.cdap.cdap.etl.api.batch.BatchSourceContext;
@@ -58,19 +59,25 @@ public class KuduSource extends ReferenceBatchSource<NullWritable, RowResult, St
   private final static int MASK = 0xff;
 
   public KuduSource(KuduSourceConfig kuduSourceConfig) {
-    super(new ReferencePluginConfig(kuduSourceConfig.referenceName));
+    super(new ReferencePluginConfig(kuduSourceConfig.getReferenceName()));
     this.kuduSourceConfig = kuduSourceConfig;
   }
 
   @Override
   public void configurePipeline(PipelineConfigurer configurer) {
-    kuduSourceConfig.validate();
+    FailureCollector failureCollector = configurer.getStageConfigurer().getFailureCollector();
+    kuduSourceConfig.validate(failureCollector);
+
     configurer.getStageConfigurer().setOutputSchema(kuduSourceConfig.getSchema());
   }
 
   @Override
   public void prepareRun(BatchSourceContext context) throws Exception {
-    context.setInput(Input.of(kuduSourceConfig.referenceName, new KuduInputFormatProvider(kuduSourceConfig)));
+    FailureCollector failureCollector = context.getFailureCollector();
+    kuduSourceConfig.validate(failureCollector);
+    failureCollector.getOrThrowException();
+
+    context.setInput(Input.of(kuduSourceConfig.getReferenceName(), new KuduInputFormatProvider(kuduSourceConfig)));
   }
 
   /**

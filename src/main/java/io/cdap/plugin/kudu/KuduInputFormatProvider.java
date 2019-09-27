@@ -35,18 +35,18 @@ public class KuduInputFormatProvider implements InputFormatProvider {
 
   public KuduInputFormatProvider(KuduSourceConfig kuduSourceConfig) throws IOException {
     // Specifies the input table
-    conf.put("kudu.mapreduce.input.table", kuduSourceConfig.optTableName);
+    conf.put("kudu.mapreduce.input.table", kuduSourceConfig.getOptTableName());
 
     // Specifies where the kudu masters are.
-    conf.put("kudu.mapreduce.master.address", kuduSourceConfig.optMasterAddresses);
+    conf.put("kudu.mapreduce.master.address", kuduSourceConfig.getOptMasterAddresses());
 
     // Specifies how long we wait for operations to complete (default: 10s)
-    conf.put("kudu.mapreduce.operation.timeout.ms", kuduSourceConfig.optOperationTimeout);
+    conf.put("kudu.mapreduce.operation.timeout.ms", kuduSourceConfig.getOptOperationTimeout());
 
     // Specifies the column projection as a comma-separated list of column names.
     // '*' means to project all columns
     // 'empty string' means to project no columns
-    conf.put("kudu.mapreduce.column.projection", kuduSourceConfig.optColumnProjection);
+    conf.put("kudu.mapreduce.column.projection", kuduSourceConfig.getOptColumnProjection());
   }
 
   /**

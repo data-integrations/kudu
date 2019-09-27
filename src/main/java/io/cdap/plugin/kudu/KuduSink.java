@@ -25,13 +25,12 @@ import io.cdap.cdap.api.data.format.StructuredRecord;
 import io.cdap.cdap.api.data.schema.Schema;
 import io.cdap.cdap.api.dataset.lib.KeyValue;
 import io.cdap.cdap.etl.api.Emitter;
+import io.cdap.cdap.etl.api.FailureCollector;
 import io.cdap.cdap.etl.api.PipelineConfigurer;
 import io.cdap.cdap.etl.api.batch.BatchRuntimeContext;
 import io.cdap.cdap.etl.api.batch.BatchSink;
 import io.cdap.cdap.etl.api.batch.BatchSinkContext;
 import io.cdap.plugin.common.ReferenceBatchSink;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.kudu.ColumnSchema;
 import org.apache.kudu.Type;
@@ -94,19 +93,13 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
   @Override
   public void configurePipeline(PipelineConfigurer configurer) {
     super.configurePipeline(configurer);
-    Preconditions.checkArgument(!Strings.isNullOrEmpty(kuduSinkConfig.optSchema), "Write schema is not specified. Please add" +
-      "the write schema.");
+    FailureCollector failureCollector = configurer.getStageConfigurer().getFailureCollector();
+    kuduSinkConfig.validate(failureCollector);
+    failureCollector.getOrThrowException();
 
     // Checks if that we are writing with has been constructed correctly.
     Schema writeSchema = kuduSinkConfig.getSchema();
     configurer.getStageConfigurer().setOutputSchema(writeSchema);
-
-    // If there is macro specified for 'master' address or table name, then
-    // we defer the creation of table to initialize.
-    if (kuduSinkConfig.containsMacro("master") || kuduSinkConfig.containsMacro("name")) {
-      return;
-    }
-    createKuduTable();
   }
 
   /**
@@ -115,6 +108,9 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
    */
   @Override
   public void prepareRun(BatchSinkContext context) throws Exception {
+    FailureCollector failureCollector = context.getFailureCollector();
+    kuduSinkConfig.validate(failureCollector);
+    failureCollector.getOrThrowException();
     // If there was a macro specified, then we attempt to create the
     // table here during initialization. If it's not a macro, then we
     // just open the the table and proceed.
@@ -231,10 +227,8 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
         checkSchemaCompatibility(kuduSchema, writeSchema);
       }
     } catch (KuduException e) {
-      String msg = String.format("Unable to check if the table '%s' exists in kudu. Reason : %s",
-                                 kuduSinkConfig.getTableName(), e.getMessage());
-      LOG.warn(msg);
-      throw new RuntimeException(e);
+      throw new RuntimeException(String.format("Unable to check if the table '%s' exists in kudu.",
+                                               kuduSinkConfig.getTableName()), e);
     } catch (TypeConversionException e) {
       throw new RuntimeException(e.getMessage());
     } finally {
@@ -316,7 +310,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
       if (writeSchema.getField(kName) == null) {
         throw new RuntimeException(
           String.format("Kudu table '%s' has a field '%s' that does not exist in your write schema. Please" +
-                          "make the appropriate change and re-submit the pipeline.", kuduSinkConfig.optTableName,
+                          "make the appropriate change and re-submit the pipeline.", kuduSinkConfig.getTableName(),
                         kName)
         );
       } else {
@@ -417,7 +411,7 @@ public class KuduSink extends ReferenceBatchSink<StructuredRecord, NullWritable,
       this.conf.put("kudu.mapreduce.master.addresses", kuduSinkConfig.getMasterAddress());
       this.conf.put("kudu.mapreduce.output.table", kuduSinkConfig.getTableName());
       this.conf.put("kudu.mapreduce.operation.timeout.ms", String.valueOf(kuduSinkConfig.getOperationTimeout()));
-      this.conf.put("kudu.mapreduce.buffer.row.count", kuduSinkConfig.optFlushRows);
+      this.conf.put("kudu.mapreduce.buffer.row.count", Integer.toString(kuduSinkConfig.getCacheRowCount()));
     }
 
     @Override

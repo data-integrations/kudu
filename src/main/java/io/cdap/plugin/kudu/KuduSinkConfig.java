@@ -20,10 +20,13 @@ import io.cdap.cdap.api.annotation.Description;
 import io.cdap.cdap.api.annotation.Macro;
 import io.cdap.cdap.api.annotation.Name;
 import io.cdap.cdap.api.data.schema.Schema;
+import io.cdap.cdap.etl.api.FailureCollector;
+import io.cdap.plugin.common.IdUtils;
 import io.cdap.plugin.common.ReferencePluginConfig;
 import org.apache.kudu.ColumnSchema;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -33,82 +36,137 @@ import javax.annotation.Nullable;
  */
 public class KuduSinkConfig extends ReferencePluginConfig {
 
-  // Required Fields.
+  public static final String MASTER = "master";
+  public static final String NAME = "name";
+  public static final String SCHEMA = "schema";
+  public static final String REFERENCE_NAME = "referenceName";
 
-  @Name("name")
+  // Required Fields.
+  @Name(NAME)
   @Description("Name of the Kudu table to write to.")
   @Macro
-  public String optTableName;
+  private String optTableName;
 
-  @Name("master")
+  @Name(MASTER)
   @Description("Comma-separated list of hostname:port for Kudu masters")
   @Macro
-  public String optMasterAddresses;
+  private String optMasterAddresses;
 
-  @Name("schema")
+  @Name(SCHEMA)
   @Description("Output schema for the kudu table.")
   @Macro
-  public String optSchema;
-
+  private String optSchema;
 
   // Options Fields
-
   @Name("opt-timeout")
   @Description("Timeout for Kudu operations in milliseconds. Defaults is  '30000 ms'.")
   @Nullable
-  public String optOperationTimeoutMs;
+  private String optOperationTimeoutMs;
 
   @Name("admin-timeout")
   @Description("Administration operation time out. Default is '30000 ms'.")
   @Nullable
-  public String optAdminTimeoutMs;
+  private String optAdminTimeoutMs;
 
   @Name("seed")
   @Description("Seed to be used for hashing. Default is 0")
   @Nullable
-  public String optSeed;
+  private String optSeed;
 
   @Name("columns")
   @Description("List of columns that you would like to distribute data by. Default is 'all columns'")
   @Nullable
-  public String optColumns;
+  private String optColumns;
 
   @Name("replicas")
   @Description("Specifies the number of replicas for the above table")
   @Nullable
-  public String optReplicas;
+  private String optReplicas;
 
   @Name("compression-algo")
   @Description("Compression algorithm to be applied on the columns. Default is 'snappy'")
   @Nullable
-  public String optCompressionAlgorithm;
+  private String optCompressionAlgorithm;
 
   @Name("encoding")
   @Description("Specifies the encoding to be applied on the schema. Default is 'auto'")
   @Nullable
-  public String optEncoding;
+  private String optEncoding;
 
   @Name("row-flush")
   @Description("Number of rows that are buffered before flushing to the tablet server")
   @Nullable
-  public String optFlushRows;
+  private String optFlushRows;
 
   @Name("buckets")
   @Description("Specifies the number of buckets to split the table into.")
   @Nullable
-  public String optBucketsCounts;
+  private String optBucketsCounts;
 
   @Name("boss-threads")
   @Description("Specifies the number of boss threads to be used by the client.")
   @Nullable
   private String optBossThreads;
 
-  public KuduSinkConfig(ColumnSchema.CompressionAlgorithm compression) {
-    this("kudu");
+  public KuduSinkConfig(String referenceName, String optTableName, String optMasterAddresses, String optSchema,
+                        @Nullable String optOperationTimeoutMs, @Nullable String optAdminTimeoutMs,
+                        @Nullable String optSeed, @Nullable String optColumns, @Nullable String optReplicas,
+                        @Nullable String optCompressionAlgorithm, @Nullable String optEncoding,
+                        @Nullable String optFlushRows, @Nullable String optBucketsCounts,
+                        @Nullable String optBossThreads) {
+    super(referenceName);
+    this.optTableName = optTableName;
+    this.optMasterAddresses = optMasterAddresses;
+    this.optSchema = optSchema;
+    this.optOperationTimeoutMs = optOperationTimeoutMs;
+    this.optAdminTimeoutMs = optAdminTimeoutMs;
+    this.optSeed = optSeed;
+    this.optColumns = optColumns;
+    this.optReplicas = optReplicas;
+    this.optCompressionAlgorithm = optCompressionAlgorithm;
+    this.optEncoding = optEncoding;
+    this.optFlushRows = optFlushRows;
+    this.optBucketsCounts = optBucketsCounts;
+    this.optBossThreads = optBossThreads;
   }
 
-  public KuduSinkConfig(String referenceName) {
-    super(referenceName);
+  private KuduSinkConfig(Builder builder) {
+    super(builder.referenceName);
+    optTableName = builder.optTableName;
+    optMasterAddresses = builder.optMasterAddresses;
+    optSchema = builder.optSchema;
+    optOperationTimeoutMs = builder.optOperationTimeoutMs;
+    optAdminTimeoutMs = builder.optAdminTimeoutMs;
+    optSeed = builder.optSeed;
+    optColumns = builder.optColumns;
+    optReplicas = builder.optReplicas;
+    optCompressionAlgorithm = builder.optCompressionAlgorithm;
+    optEncoding = builder.optEncoding;
+    optFlushRows = builder.optFlushRows;
+    optBucketsCounts = builder.optBucketsCounts;
+    optBossThreads = builder.optBossThreads;
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static Builder builder(KuduSinkConfig copy) {
+    return builder()
+      .setReferenceName(copy.referenceName)
+      .setOptTableName(copy.optTableName)
+      .setOptMasterAddresses(copy.optMasterAddresses)
+      .setOptSchema(copy.optSchema)
+      .setOptOperationTimeoutMs(copy.optOperationTimeoutMs)
+      .setOptAdminTimeoutMs(copy.optAdminTimeoutMs)
+      .setOptSeed(copy.optSeed)
+      .setOptColumns(copy.optColumns)
+      .setOptReplicas(copy.optReplicas)
+      .setOptCompressionAlgorithm(copy.optCompressionAlgorithm)
+      .setOptEncoding(copy.optEncoding)
+      .setOptFlushRows(copy.optFlushRows)
+      .setOptBucketsCounts(copy.optBucketsCounts)
+      .setOptBossThreads(copy.optBossThreads);
   }
 
   /**
@@ -259,5 +317,124 @@ public class KuduSinkConfig extends ReferencePluginConfig {
    */
   public int getThreads() {
     return (optBossThreads != null) ? Integer.parseInt(optBossThreads) : 1;
+  }
+
+  public void validate(FailureCollector failureCollector) {
+    IdUtils.validateReferenceName(referenceName, failureCollector);
+
+    try {
+      Schema.parseJson(optSchema);
+    } catch (IOException e) {
+      failureCollector.addFailure(String.format("Unable to parse schema '%s'", optSchema),
+                                  "Provide correct schema.")
+        .withStacktrace(e.getStackTrace())
+        .withConfigProperty(SCHEMA);
+    }
+
+    if (!containsMacro(MASTER)) {
+      Arrays.stream(optMasterAddresses.split(",")).forEach(masterAddress -> {
+        if (masterAddress.split(":").length != 2) {
+          failureCollector.addFailure(String.format("Master Address '%s' has incorrect format.", masterAddress),
+                                      "Provide Master Address in format - <hostname>:<port>")
+            .withConfigProperty(MASTER);
+        }
+      });
+    }
+  }
+
+  public static final class Builder {
+    private String referenceName;
+    // Required Fields.
+    private String optTableName;
+    private String optMasterAddresses;
+    private String optSchema;
+    // Options Fields
+    private String optOperationTimeoutMs;
+    private String optAdminTimeoutMs;
+    private String optSeed;
+    private String optColumns;
+    private String optReplicas;
+    private String optCompressionAlgorithm;
+    private String optEncoding;
+    private String optFlushRows;
+    private String optBucketsCounts;
+    private String optBossThreads;
+
+    private Builder() {
+    }
+
+    public Builder setReferenceName(String referenceName) {
+      this.referenceName = referenceName;
+      return this;
+    }
+
+    public Builder setOptTableName(String optTableName) {
+      this.optTableName = optTableName;
+      return this;
+    }
+
+    public Builder setOptMasterAddresses(String optMasterAddresses) {
+      this.optMasterAddresses = optMasterAddresses;
+      return this;
+    }
+
+    public Builder setOptSchema(String optSchema) {
+      this.optSchema = optSchema;
+      return this;
+    }
+
+    public Builder setOptOperationTimeoutMs(String optOperationTimeoutMs) {
+      this.optOperationTimeoutMs = optOperationTimeoutMs;
+      return this;
+    }
+
+    public Builder setOptAdminTimeoutMs(String optAdminTimeoutMs) {
+      this.optAdminTimeoutMs = optAdminTimeoutMs;
+      return this;
+    }
+
+    public Builder setOptSeed(String optSeed) {
+      this.optSeed = optSeed;
+      return this;
+    }
+
+    public Builder setOptColumns(String optColumns) {
+      this.optColumns = optColumns;
+      return this;
+    }
+
+    public Builder setOptReplicas(String optReplicas) {
+      this.optReplicas = optReplicas;
+      return this;
+    }
+
+    public Builder setOptCompressionAlgorithm(String optCompressionAlgorithm) {
+      this.optCompressionAlgorithm = optCompressionAlgorithm;
+      return this;
+    }
+
+    public Builder setOptEncoding(String optEncoding) {
+      this.optEncoding = optEncoding;
+      return this;
+    }
+
+    public Builder setOptFlushRows(String optFlushRows) {
+      this.optFlushRows = optFlushRows;
+      return this;
+    }
+
+    public Builder setOptBucketsCounts(String optBucketsCounts) {
+      this.optBucketsCounts = optBucketsCounts;
+      return this;
+    }
+
+    public Builder setOptBossThreads(String optBossThreads) {
+      this.optBossThreads = optBossThreads;
+      return this;
+    }
+
+    public KuduSinkConfig build() {
+      return new KuduSinkConfig(this);
+    }
   }
 }
